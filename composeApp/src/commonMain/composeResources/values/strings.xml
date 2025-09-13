@@ -1,0 +1,10 @@
+<resources>
+    <string name="empty_screen_title_not_found_results">No results found</string>
+    <string name="empty_screen_description_no_results">No results found for: %1$s</string>
+    <string name="empty_screen_title_no_internet">No internet connection</string>
+    <string name="empty_screen_description_no_internet">Please check your internet connection</string>
+    <string name="empty_screen_title_error_something_went_wrong">Oops!</string>
+    <string name="empty_screen_description_error_something_went_wrong">Something went wrong, please try again</string>
+    <string name="screen_empty_title_favorites">You have no favorites</string>
+    <string name="screen_empty_description_favorites">Add movies to your favorites to see them here</string>
+</resources>
