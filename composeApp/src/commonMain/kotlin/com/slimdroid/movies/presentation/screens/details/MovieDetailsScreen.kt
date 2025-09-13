@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Movie
 import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -77,6 +78,9 @@ fun MovieDetailsRoute(
         onClickFavorite = {
             viewModel.toggleFavoriteMovie(isFavorite = it)
         },
+        onTrailerClick = {
+            viewModel.openMovieVideoUrl()
+        },
         uiState = uiState
     )
 }
@@ -85,6 +89,7 @@ fun MovieDetailsRoute(
 fun MovieDetailsScreen(
     onClickBack: () -> Unit,
     onClickFavorite: (Boolean) -> Unit,
+    onTrailerClick: () -> Unit,
     uiState: MovieDetailsUiState
 ) {
     when (uiState) {
@@ -94,6 +99,7 @@ fun MovieDetailsScreen(
             MovieDetailsContent(
                 onClickBack = onClickBack,
                 onClickFavorite = onClickFavorite,
+                onTrailerClick = onTrailerClick,
                 movie = uiState.movie
             )
         }
@@ -109,6 +115,7 @@ fun MovieDetailsScreen(
 fun MovieDetailsContent(
     onClickBack: () -> Unit,
     onClickFavorite: (Boolean) -> Unit,
+    onTrailerClick: () -> Unit,
     movie: Movie
 ) {
     Scaffold(
@@ -243,6 +250,15 @@ fun MovieDetailsContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                onClick = onTrailerClick,
+            ) {
+                Text(text = "Play Trailer")
+            }
+
             //Description Title
             Text(
                 modifier = Modifier
@@ -366,6 +382,7 @@ fun DetailsMovieContentPreview(
             MovieDetailsScreen(
                 onClickBack = {},
                 onClickFavorite = {},
+                onTrailerClick = {},
                 uiState = mockedUiState
             )
         }

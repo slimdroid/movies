@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import co.touchlab.kermit.Logger
 import com.slimdroid.movies.common.Result
 import com.slimdroid.movies.common.asResult
+import com.slimdroid.movies.common.openMovieTrailer
 import com.slimdroid.movies.data.repository.FavoriteMoviesRepository
 import com.slimdroid.movies.data.repository.MovieDetailsRepository
 import com.slimdroid.movies.dependency.Dependencies
@@ -20,7 +21,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MovieDetailsViewModel(
-    movieDetailsRepository: MovieDetailsRepository,
+    private val movieDetailsRepository: MovieDetailsRepository,
     private val favoritesRepository: FavoriteMoviesRepository,
     private val movieId: Int,
     private val externalScope: CoroutineScope
@@ -48,6 +49,17 @@ class MovieDetailsViewModel(
         viewModelScope.launch {
             if (isFavorite) favoritesRepository.saveFavoriteMovie(movieId)
             else favoritesRepository.markAsUnfavorite(movieId)
+        }
+    }
+
+    fun openMovieVideoUrl() {
+        viewModelScope.launch {
+            movieDetailsRepository.getMovieVideoUrl(movieId)
+                .onSuccess {
+                    openMovieTrailer(it)
+                }.onFailure {
+                    Logger.i { "Can not open YouTube" }
+                }
         }
     }
 
