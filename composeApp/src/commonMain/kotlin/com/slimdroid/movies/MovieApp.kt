@@ -11,7 +11,3 @@ internal fun MovieApp() = AppTheme {
         RootNavHost()
     }
 }
-
-expect fun logInfo(tag: String, message: String)
-
-expect fun logError(tag: String, message: String, throwable: Throwable? = null)

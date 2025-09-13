@@ -17,12 +17,15 @@ plugins {
     alias(libs.plugins.gradle.buildconfig)
 }
 
-buildConfig{
+buildConfig {
     packageName = "com.slimdroid.movies"
     buildConfigField(
         "String",
         "TMDB_TOKEN",
-        gradleLocalProperties(projectRootDir = rootDir, providers = providers).getProperty("TMDB_TOKEN", "Provide your TMDB_TOKEN in local.properties")
+        gradleLocalProperties(
+            projectRootDir = rootDir,
+            providers = providers
+        ).getProperty("TMDB_TOKEN", "Provide your TMDB_TOKEN in local.properties")
     )
 }
 
@@ -81,8 +84,6 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.compose.core)
             implementation(libs.coil.network.ktor)
-
-//            implementation("org.slf4j:slf4j-android:1.7.36")
         }
 
         commonTest.dependencies {

@@ -8,7 +8,6 @@ import androidx.activity.enableEdgeToEdge
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
-        logInfo("MainActivity", "onCreate")
         super.onCreate(savedInstanceState)
         setContent { MovieApp() }
     }

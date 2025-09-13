@@ -1,7 +1,6 @@
 package com.slimdroid.movies.network
 
 import com.slimdroid.movies.BuildConfig.TMDB_TOKEN
-import com.slimdroid.movies.logInfo
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
@@ -25,6 +24,7 @@ import kotlinx.serialization.json.Json
 
 object NetworkClient {
 
+    private const val TAG = "Network"
     private const val HOST = "api.themoviedb.org"
 
     private val json by lazy {
@@ -52,10 +52,9 @@ object NetworkClient {
                 json(json)
             }
             install(Logging) {
-//                logger = Logger.ANDROID
                 logger = object : Logger {
                     override fun log(message: String) {
-                        logInfo("HTTP_Client", message)
+                        co.touchlab.kermit.Logger.i(TAG) { message }
                     }
                 }
                 level = LogLevel.BODY
@@ -71,11 +70,9 @@ object NetworkClient {
                         ?: return@handleResponseExceptionWithRequest
                     val exceptionResponse = clientException.response
                     val error: Error = exceptionResponse.body()
-                    logInfo(
-                        "NetworkClient",
+                    co.touchlab.kermit.Logger.e(clientException, TAG) {
                         "HTTP Error ${error.statusCode} ${error.statusMessage}"
-                    )
-//                    co.touchlab.kermit.Logger.e {"HTTP Error ${error.statusCode} ${error.statusMessage}" }
+                    }
                     throw HttpClientException(error)
                 }
             }

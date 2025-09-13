@@ -1,13 +1,12 @@
 package com.slimdroid.movies.data.repository
 
 import androidx.annotation.CheckResult
+import com.slimdroid.movies.common.runCatchingCancellation
 import com.slimdroid.movies.data.model.MovieList
 import com.slimdroid.movies.data.model.asEntity
 import com.slimdroid.movies.database.entity.asExternalModel
 import com.slimdroid.movies.database.source.FavoriteMoviesLocalDataSource
 import com.slimdroid.movies.database.source.MovieLocalDataSource
-import com.slimdroid.movies.logError
-import com.slimdroid.movies.common.runCatchingCancellation
 import com.slimdroid.movies.network.source.MovieNetworkDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -32,7 +31,6 @@ class MovieRepositoryImpl(
     override fun getMovieList(page: Int): Flow<MovieList> = flow {
         fetchMovieList(page)
             .onFailure {
-                logError("MovieRepository", "Failed to fetch movies: ${it.message}", it)
                 emit(
                     MovieList(
                         page = page,

@@ -10,7 +10,6 @@ import com.slimdroid.movies.common.asResult
 import com.slimdroid.movies.data.repository.MovieRepository
 import com.slimdroid.movies.dependency.Dependencies
 import com.slimdroid.movies.domain.ToggleFavoriteMovieUseCase
-import com.slimdroid.movies.logInfo
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -25,7 +24,6 @@ class MoviesViewModel(
     val uiState: StateFlow<MoviesUiState> = movieRepository.getMovieList()
         .asResult()
         .map {
-            logInfo("MoviesViewModel", "uiState: $it")
             when (it) {
                 is Result.Loading -> MoviesUiState.Loading
                 is Result.Error -> MoviesUiState.ErrorGeneral(
