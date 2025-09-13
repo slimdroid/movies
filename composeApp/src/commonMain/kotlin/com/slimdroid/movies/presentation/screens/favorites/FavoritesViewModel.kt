@@ -35,15 +35,6 @@ class FavoritesViewModel(
         }
     }
 
-    // TODO придумать куда запихнуть этот метод
-    override fun onCleared() {
-        super.onCleared()
-        // TODO implement external scope for this
-        viewModelScope.launch {
-            favoritesRepository.removeAllUnfavorited()
-        }
-    }
-
     companion object {
 
         val Factory: ViewModelProvider.Factory = viewModelFactory {

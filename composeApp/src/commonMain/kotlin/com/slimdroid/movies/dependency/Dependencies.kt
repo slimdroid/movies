@@ -5,8 +5,6 @@ import com.slimdroid.movies.cache.MovieDetailsCacheLocalDataSource
 import com.slimdroid.movies.cache.MovieDetailsCacheLocalDataSourceImpl
 import com.slimdroid.movies.data.repository.FavoriteMoviesRepository
 import com.slimdroid.movies.data.repository.FavoriteMoviesRepositoryImpl
-import com.slimdroid.movies.data.repository.FavoriteToggleMovieRepository
-import com.slimdroid.movies.data.repository.FavoriteToggleMovieRepositoryImpl
 import com.slimdroid.movies.data.repository.MovieDetailsRepository
 import com.slimdroid.movies.data.repository.MovieDetailsRepositoryImpl
 import com.slimdroid.movies.data.repository.MovieRepository
@@ -21,8 +19,10 @@ import com.slimdroid.movies.domain.ToggleFavoriteMovieUseCase
 import com.slimdroid.movies.network.NetworkClient
 import com.slimdroid.movies.network.source.MovieNetworkDataSource
 import com.slimdroid.movies.network.source.MovieNetworkDataSourceImpl
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.SupervisorJob
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -40,12 +40,12 @@ object Dependencies {
         createMovieDetailsRepository()
     }
 
-    val favoriteMovieRepository: FavoriteToggleMovieRepository by lazy {
-        createFavoriteMovieRepository()
+    val toggleFavoriteMovieUseCase: ToggleFavoriteMovieUseCase by lazy {
+        ToggleFavoriteMovieUseCase(favoritesRepository)
     }
 
-    val toggleFavoriteMovieUseCase: ToggleFavoriteMovieUseCase by lazy {
-        ToggleFavoriteMovieUseCase(favoriteMovieRepository)
+    val externalScope: CoroutineScope by lazy {
+        CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }
 
     private val db: AppDatabase by lazy {
@@ -62,9 +62,13 @@ object Dependencies {
             favoriteMoviesLocalDataSource = createFavoriteMoviesLocalDataSource
         )
 
+    @OptIn(ExperimentalTime::class)
     private fun createFavoriteMoviesRepository(): FavoriteMoviesRepository =
         FavoriteMoviesRepositoryImpl(
-            favoriteMoviesLocalDataSource = createFavoriteMoviesLocalDataSource
+            movieLocalDataSource = createMovieLocalDataSource,
+            movieDetailsCacheLocalDataSource = movieDetailsCacheLocalDataSource,
+            favoriteMoviesLocalDataSource = createFavoriteMoviesLocalDataSource,
+            clock = Clock.System
         )
 
     private fun createMovieDetailsRepository(): MovieDetailsRepository =
@@ -73,15 +77,6 @@ object Dependencies {
             movieRemoteDataSource = createMovieNetworkDataSource,
             movieDetailsCacheLocalDataSource = movieDetailsCacheLocalDataSource,
             favoriteMoviesLocalDataSource = createFavoriteMoviesLocalDataSource
-        )
-
-    @OptIn(ExperimentalTime::class)
-    private fun createFavoriteMovieRepository(): FavoriteToggleMovieRepository =
-        FavoriteToggleMovieRepositoryImpl(
-            movieLocalDataSource = createMovieLocalDataSource,
-            movieDetailsCacheLocalDataSource = movieDetailsCacheLocalDataSource,
-            favoriteMoviesLocalDataSource = createFavoriteMoviesLocalDataSource,
-            clock = Clock.System
         )
 
     private val createMovieLocalDataSource: MovieLocalDataSource by lazy {

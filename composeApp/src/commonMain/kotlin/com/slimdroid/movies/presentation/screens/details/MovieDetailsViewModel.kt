@@ -9,10 +9,10 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import co.touchlab.kermit.Logger
 import com.slimdroid.movies.common.Result
 import com.slimdroid.movies.common.asResult
+import com.slimdroid.movies.data.repository.FavoriteMoviesRepository
 import com.slimdroid.movies.data.repository.MovieDetailsRepository
-import com.slimdroid.movies.dependency.Dependencies.detailsRepository
-import com.slimdroid.movies.dependency.Dependencies.toggleFavoriteMovieUseCase
-import com.slimdroid.movies.domain.ToggleFavoriteMovieUseCase
+import com.slimdroid.movies.dependency.Dependencies
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -21,8 +21,9 @@ import kotlinx.coroutines.launch
 
 class MovieDetailsViewModel(
     movieDetailsRepository: MovieDetailsRepository,
-    private val toggleFavoriteMovieUseCase: ToggleFavoriteMovieUseCase,
-    private val movieId: Int
+    private val favoritesRepository: FavoriteMoviesRepository,
+    private val movieId: Int,
+    private val externalScope: CoroutineScope
 ) : ViewModel() {
 
     val uiState: StateFlow<MovieDetailsUiState> = movieDetailsRepository.getMovieDetails(movieId)
@@ -45,7 +46,15 @@ class MovieDetailsViewModel(
 
     fun toggleFavoriteMovie(isFavorite: Boolean) {
         viewModelScope.launch {
-            toggleFavoriteMovieUseCase(movieId, isFavorite)
+            if (isFavorite) favoritesRepository.saveFavoriteMovie(movieId)
+            else favoritesRepository.markAsUnfavorite(movieId)
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        externalScope.launch {
+            favoritesRepository.removeAllUnfavorited()
         }
     }
 
@@ -56,9 +65,10 @@ class MovieDetailsViewModel(
             initializer {
                 val movieId = this[MOVIE_ID_KEY] as Int
                 MovieDetailsViewModel(
-                    movieDetailsRepository = detailsRepository,
-                    toggleFavoriteMovieUseCase = toggleFavoriteMovieUseCase,
-                    movieId = movieId
+                    movieDetailsRepository = Dependencies.detailsRepository,
+                    favoritesRepository = Dependencies.favoritesRepository,
+                    movieId = movieId,
+                    externalScope = Dependencies.externalScope
                 )
             }
         }

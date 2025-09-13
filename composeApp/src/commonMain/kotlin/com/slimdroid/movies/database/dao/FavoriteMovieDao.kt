@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Upsert
 import com.slimdroid.movies.database.entity.FavoriteMovieEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -29,12 +28,7 @@ interface FavoriteMovieDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(favoriteMoviesEntity: FavoriteMovieEntity)
 
-    @Upsert
-    suspend fun upsert(favoriteMoviesEntity: FavoriteMovieEntity)
-
     @Query("SELECT id FROM favorite_movie WHERE favorite = true")
     fun getAllIds(): Flow<List<Int>>
 
-    @Query("SELECT EXISTS(SELECT * FROM favorite_movie WHERE id = :id AND favorite = true)")
-    suspend fun isFavorite(id: Int): Boolean
 }

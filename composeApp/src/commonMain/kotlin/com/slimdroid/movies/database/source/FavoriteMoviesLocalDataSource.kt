@@ -13,10 +13,9 @@ interface FavoriteMoviesLocalDataSource {
     suspend fun getById(id: Int): FavoriteMovieEntity?
     suspend fun clearUnfavorited()
     suspend fun removeById(id: Int)
-    suspend fun updateFavoriteStatus(id: Int, isFavorite: Boolean)
+    suspend fun markAsUnfavorite(id: Int)
     suspend fun insert(favoriteMoviesEntity: FavoriteMovieEntity)
     fun getAllIds(): Flow<List<Int>>
-    suspend fun isFavorite(id: Int): Boolean
 }
 
 class FavoriteMoviesLocalDataSourceImpl(
@@ -39,10 +38,9 @@ class FavoriteMoviesLocalDataSourceImpl(
         favoriteMovieDao.deleteById(id)
     }
 
-    override suspend fun updateFavoriteStatus(id: Int, isFavorite: Boolean) =
-        withContext(ioDispatcher) {
-            favoriteMovieDao.updateFavoriteStatus(id, isFavorite)
-        }
+    override suspend fun markAsUnfavorite(id: Int) = withContext(ioDispatcher) {
+        favoriteMovieDao.updateFavoriteStatus(id, false)
+    }
 
     override suspend fun insert(favoriteMoviesEntity: FavoriteMovieEntity) =
         withContext(ioDispatcher) {
@@ -51,9 +49,5 @@ class FavoriteMoviesLocalDataSourceImpl(
 
     override fun getAllIds(): Flow<List<Int>> = favoriteMovieDao.getAllIds()
         .flowOn(ioDispatcher)
-
-    override suspend fun isFavorite(id: Int): Boolean = withContext(ioDispatcher) {
-        favoriteMovieDao.isFavorite(id)
-    }
 
 }
