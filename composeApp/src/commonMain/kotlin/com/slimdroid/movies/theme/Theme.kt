@@ -1,9 +1,8 @@
 package com.slimdroid.movies.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
-//import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-//import androidx.compose.material3.MaterialExpressiveTheme
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -92,7 +91,7 @@ private val DarkColorScheme = darkColorScheme(
 
 internal val LocalThemeIsDark = compositionLocalOf { mutableStateOf(true) }
 
-//@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun AppTheme(
     content: @Composable () -> Unit
@@ -104,7 +103,7 @@ internal fun AppTheme(
     ) {
         val isDark by isDarkState
         SystemAppearance(!isDark)
-        MaterialTheme(
+        MaterialExpressiveTheme(
             colorScheme = if (isDark) DarkColorScheme else LightColorScheme,
             typography = Typography,
             content = { Surface(content = content) }
