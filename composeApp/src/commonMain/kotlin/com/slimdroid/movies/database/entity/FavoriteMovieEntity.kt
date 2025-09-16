@@ -18,7 +18,7 @@ data class FavoriteMovieEntity(
     @ColumnInfo("original_title")       val originalTitle: String,
     @ColumnInfo("overview")             val overview: String,
     @ColumnInfo("popularity")           val popularity: Float,
-    @ColumnInfo("poster_path")          val posterPath: String,
+    @ColumnInfo("poster_path")          val posterPath: String? = null,
     @ColumnInfo("release_date")         val releaseDate: String,
     @ColumnInfo("title")                val title: String,
     @ColumnInfo("video")                val video: Boolean,

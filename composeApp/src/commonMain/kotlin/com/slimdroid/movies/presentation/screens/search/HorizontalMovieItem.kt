@@ -35,7 +35,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun HorizontalMovieItem(
     title: String,
     description: String,
-    imageUrl: String,
+    imageUrl: String?,
     rating: Float,
     releaseDate: String,
     markAsFavorite: () -> Unit,

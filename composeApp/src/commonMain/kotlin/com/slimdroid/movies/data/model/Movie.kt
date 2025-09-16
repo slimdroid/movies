@@ -15,7 +15,7 @@ data class Movie(
     val originalTitle: String,
     val overview: String,
     val popularity: Float,
-    val posterPath: String,
+    val posterPath: String? = null,
     val releaseDate: String,
     val title: String,
     val video: Boolean,
@@ -49,4 +49,21 @@ fun MovieDto.asEntity(listInfoPage: Int) = MovieEntity(
     video = video,
     voteAverage = voteAverage,
     voteCount = voteCount,
+)
+
+fun MovieDto.asExternalModel() = Movie(
+    id = id,
+    adult = adult,
+    backdropPath = backdropPath?.let { BACKDROP_BASE_URL + it },
+    genres = genreIds.map { it.toString() },
+    originalLanguage = originalLanguage,
+    originalTitle = originalTitle,
+    overview = overview,
+    popularity = popularity,
+    posterPath = posterPath?.let { POSTER_BASE_URL + it },
+    releaseDate = releaseDate,
+    title = title,
+    video = video,
+    voteAverage = voteAverage,
+    voteCount = voteCount
 )

@@ -13,7 +13,7 @@ data class MovieDto(
     @SerialName("original_title")       val originalTitle: String,
     @SerialName("overview")             val overview: String,
     @SerialName("popularity")           val popularity: Float,
-    @SerialName("poster_path")          val posterPath: String,
+    @SerialName("poster_path")          val posterPath: String? = null,
     @SerialName("release_date")         val releaseDate: String,
     @SerialName("title")                val title: String,
     @SerialName("video")                val video: Boolean,
