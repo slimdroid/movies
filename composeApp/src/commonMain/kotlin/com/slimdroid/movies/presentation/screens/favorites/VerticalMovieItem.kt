@@ -26,7 +26,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
 import com.slimdroid.movies.theme.AppTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -34,7 +33,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun VerticalMovieItem(
     title: String,
     release: String,
-    imageUrl: String,
+    imageUrl: String?,
     removeFromFavorite: () -> Unit,
     onClick: () -> Unit
 ) {
