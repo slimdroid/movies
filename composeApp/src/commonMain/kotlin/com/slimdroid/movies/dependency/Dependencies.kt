@@ -9,6 +9,8 @@ import com.slimdroid.movies.data.repository.MovieDetailsRepository
 import com.slimdroid.movies.data.repository.MovieDetailsRepositoryImpl
 import com.slimdroid.movies.data.repository.MovieRepository
 import com.slimdroid.movies.data.repository.MovieRepositoryImpl
+import com.slimdroid.movies.data.repository.SearchMovieRepository
+import com.slimdroid.movies.data.repository.SearchMovieRepositoryImpl
 import com.slimdroid.movies.database.AppDatabase
 import com.slimdroid.movies.database.getDatabaseBuilder
 import com.slimdroid.movies.database.source.FavoriteMoviesLocalDataSource
@@ -38,6 +40,10 @@ object Dependencies {
 
     val detailsRepository: MovieDetailsRepository by lazy {
         createMovieDetailsRepository()
+    }
+
+    val searchRepository: SearchMovieRepository by lazy {
+        createSearchMovieRepository()
     }
 
     val toggleFavoriteMovieUseCase: ToggleFavoriteMovieUseCase by lazy {
@@ -77,6 +83,11 @@ object Dependencies {
             movieRemoteDataSource = createMovieNetworkDataSource,
             movieDetailsCacheLocalDataSource = movieDetailsCacheLocalDataSource,
             favoriteMoviesLocalDataSource = createFavoriteMoviesLocalDataSource
+        )
+
+    private fun createSearchMovieRepository(): SearchMovieRepository =
+        SearchMovieRepositoryImpl(
+            remoteDataSource = createMovieNetworkDataSource
         )
 
     private val createMovieLocalDataSource: MovieLocalDataSource by lazy {
