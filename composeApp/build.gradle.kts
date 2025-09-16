@@ -60,12 +60,13 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
 
-            implementation(libs.androidx.navigation.composee)
-            implementation(libs.androidx.lifecycle.runtime.compose)
-            implementation(libs.androidx.lifecycle.viewmodel.compose)
+            implementation(libs.jetbrains.androidx.navigation)
+            implementation(libs.jetbrains.androidx.lifecycle.runtime)
+            implementation(libs.jetbrains.androidx.lifecycle.viewmodel)
+
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.room.paging)
-            implementation(libs.androidx.sqlite.bundled)
+            implementation(libs.androidx.sqlite)
             implementation(libs.androidx.paging)
 
             implementation(libs.kotlinx.coroutines.core)
