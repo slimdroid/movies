@@ -2,11 +2,12 @@ package com.slimdroid.movies.database
 
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.slimdroid.movies.common.FILE_DIR
 import java.io.File
 
 actual fun getDatabaseBuilder(dbName: String): RoomDatabase.Builder<AppDatabase> {
-    val dbFile = File(System.getProperty("java.io.tmpdir"), dbName)
+    val dbFile = File(System.getProperty(FILE_DIR), dbName)
     return Room.databaseBuilder<AppDatabase>(
-        name = dbFile.absolutePath,
+        name = dbFile.absolutePath
     )
 }

@@ -1,5 +1,7 @@
 package com.slimdroid.movies.dependency
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.slimdroid.movies.cache.MovieDetailsCacheLocalDataSource
 import com.slimdroid.movies.cache.MovieDetailsCacheLocalDataSourceImpl
@@ -9,6 +11,8 @@ import com.slimdroid.movies.data.repository.MovieDetailsRepository
 import com.slimdroid.movies.data.repository.MovieDetailsRepositoryImpl
 import com.slimdroid.movies.data.repository.MovieRepository
 import com.slimdroid.movies.data.repository.MovieRepositoryImpl
+import com.slimdroid.movies.data.repository.SearchHistoryRepository
+import com.slimdroid.movies.data.repository.SearchHistoryRepositoryImpl
 import com.slimdroid.movies.data.repository.SearchMovieRepository
 import com.slimdroid.movies.data.repository.SearchMovieRepositoryImpl
 import com.slimdroid.movies.database.AppDatabase
@@ -17,6 +21,7 @@ import com.slimdroid.movies.database.source.FavoriteMoviesLocalDataSource
 import com.slimdroid.movies.database.source.FavoriteMoviesLocalDataSourceImpl
 import com.slimdroid.movies.database.source.MovieLocalDataSource
 import com.slimdroid.movies.database.source.MovieLocalDataSourceImpl
+import com.slimdroid.movies.datastore.provideDataStore
 import com.slimdroid.movies.domain.ToggleFavoriteMovieUseCase
 import com.slimdroid.movies.network.NetworkClient
 import com.slimdroid.movies.network.source.MovieNetworkDataSource
@@ -46,6 +51,10 @@ object Dependencies {
         createSearchMovieRepository()
     }
 
+    val searchHistoryRepository: SearchHistoryRepository by lazy {
+        createSearchHistoryRepository()
+    }
+
     val toggleFavoriteMovieUseCase: ToggleFavoriteMovieUseCase by lazy {
         ToggleFavoriteMovieUseCase(favoritesRepository)
     }
@@ -59,6 +68,10 @@ object Dependencies {
             .setDriver(BundledSQLiteDriver())
             .setQueryCoroutineContext(Dispatchers.IO)
             .build()
+    }
+
+    private val dataStore: DataStore<Preferences> by lazy {
+        provideDataStore()
     }
 
     private fun createMoviesRepository(): MovieRepository =
@@ -88,6 +101,13 @@ object Dependencies {
     private fun createSearchMovieRepository(): SearchMovieRepository =
         SearchMovieRepositoryImpl(
             remoteDataSource = createMovieNetworkDataSource
+        )
+
+
+    private fun createSearchHistoryRepository(): SearchHistoryRepository =
+        SearchHistoryRepositoryImpl(
+            dataStore = dataStore,
+            ioDispatcher = Dispatchers.IO
         )
 
     private val createMovieLocalDataSource: MovieLocalDataSource by lazy {

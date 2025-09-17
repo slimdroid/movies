@@ -16,9 +16,9 @@ class MoviePagingSource(
 ) : PagingSource<Int, Movie>() {
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Movie> {
-        val nextPageNumber = params.key ?: STARTING_KEY
+        val pageNumber = params.key ?: STARTING_KEY
         return runCatching {
-            movieRemoteDataSource.searchMovie(query, page = nextPageNumber)
+            movieRemoteDataSource.searchMovie(query, page = pageNumber)
         }.fold(
             onSuccess = { response ->
                 Logger.i { "response: page:${response.page}, totalPages:${response.totalPages}" }
@@ -27,7 +27,7 @@ class MoviePagingSource(
 
                 LoadResult.Page(
                     data = data,
-                    prevKey = if (nextPageNumber == STARTING_KEY) null else nextPageNumber.minus(1),
+                    prevKey = if (pageNumber == STARTING_KEY) null else pageNumber.minus(1),
                     nextKey = if (response.page < response.totalPages) response.page.plus(1) else null
                 )
             },
