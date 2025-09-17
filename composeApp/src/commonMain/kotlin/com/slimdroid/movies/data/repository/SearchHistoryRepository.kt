@@ -32,6 +32,7 @@ class SearchHistoryRepositoryImpl(
                 val currentPrompts: Set<String> = preferences[SEARCH_HISTORY_PROMPTS] ?: emptySet()
                 preferences[SEARCH_HISTORY_PROMPTS] = currentPrompts
                     .minus(prompt)
+                    .reversed()
                     .plus(prompt)
                     .reversed()
                     .take(10)
