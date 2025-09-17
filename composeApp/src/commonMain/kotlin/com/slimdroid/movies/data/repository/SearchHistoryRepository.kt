@@ -24,6 +24,7 @@ class SearchHistoryRepositoryImpl(
 
     private companion object {
         val SEARCH_HISTORY_PROMPTS = stringSetPreferencesKey("search_history_prompts")
+        const val SEARCH_HISTORY_LIMIT = 10
     }
 
     override suspend fun savePrompt(prompt: String): Result<Unit> = runCatchingCancellation {
@@ -35,7 +36,7 @@ class SearchHistoryRepositoryImpl(
                     .reversed()
                     .plus(prompt)
                     .reversed()
-                    .take(10)
+                    .take(SEARCH_HISTORY_LIMIT)
                     .toSet()
             }
         }
