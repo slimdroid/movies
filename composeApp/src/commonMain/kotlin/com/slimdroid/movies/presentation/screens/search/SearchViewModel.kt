@@ -5,44 +5,70 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.paging.cachedIn
 import com.slimdroid.movies.common.Result
 import com.slimdroid.movies.common.asResult
-import com.slimdroid.movies.data.repository.MovieRepository
-import com.slimdroid.movies.dependency.Dependencies.moviesRepository
-import com.slimdroid.movies.dependency.Dependencies.toggleFavoriteMovieUseCase
-import com.slimdroid.movies.domain.ToggleFavoriteMovieUseCase
+import com.slimdroid.movies.data.repository.SearchHistoryRepository
+import com.slimdroid.movies.data.repository.SearchMovieRepository
+import com.slimdroid.movies.dependency.Dependencies
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SearchViewModel(
-    private val movieRepository: MovieRepository,
-    private val toggleFavoriteMovieUseCase: ToggleFavoriteMovieUseCase
+    private val searchRepository: SearchMovieRepository,
+    private val searchHistoryRepository: SearchHistoryRepository
 ) : ViewModel() {
 
-    val uiState: StateFlow<SearchUiState> = movieRepository.getMovieList()
-        .asResult()
-        .map {
-            when (it) {
-                is Result.Loading -> SearchUiState.Loading
-                is Result.Error -> SearchUiState.ErrorGeneral(
-                    it.exception.message ?: "Unknown error"
-                )
+    private val queryFlow = MutableStateFlow("")
 
-                is Result.Success -> SearchUiState.Success(it.data.results)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState: StateFlow<SearchUiState> = queryFlow.flatMapLatest { query ->
+        searchRepository.searchMovie(query)
+            .cachedIn(viewModelScope)
+            .asResult()
+            .map {
+                when (it) {
+                    is Result.Loading -> SearchUiState.Loading
+                    is Result.Error -> SearchUiState.ErrorGeneral(
+                        it.exception.message ?: "Unknown error"
+                    )
+
+                    is Result.Success -> SearchUiState.Success(flowOf(it.data))
+                }
             }
-        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Companion.WhileSubscribed(5000, 1),
+        initialValue = SearchUiState.Loading
+    )
+
+    val searchHistory: StateFlow<List<String>> = searchHistoryRepository.getPrompts()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Companion.WhileSubscribed(5000, 1),
-            initialValue = SearchUiState.Loading
+            initialValue = emptyList()
         )
 
-    fun markAsFavorite(movieId: Int, isFavorite: Boolean) {
+    fun onQueryChanged(query: String) {
+        queryFlow.value = query
+    }
+
+    fun savePrompt(prompt: String) {
         viewModelScope.launch {
-            toggleFavoriteMovieUseCase.invoke(movieId, isFavorite)
+            searchHistoryRepository.savePrompt(prompt)
+        }
+    }
+
+    fun deletePrompt(prompt: String) {
+        viewModelScope.launch {
+            searchHistoryRepository.deletePrompt(prompt)
         }
     }
 
@@ -51,8 +77,8 @@ class SearchViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 SearchViewModel(
-                    movieRepository = moviesRepository,
-                    toggleFavoriteMovieUseCase = toggleFavoriteMovieUseCase
+                    searchRepository = Dependencies.searchRepository,
+                    searchHistoryRepository = Dependencies.searchHistoryRepository
                 )
             }
         }
