@@ -45,7 +45,7 @@ class SearchHistoryRepositoryImpl(
     override suspend fun deletePrompt(prompt: String): Result<Unit> = runCatchingCancellation {
         withContext(ioDispatcher) {
             dataStore.edit { preferences ->
-                val currentPrompts = preferences[SEARCH_HISTORY_PROMPTS] ?: emptySet()
+                val currentPrompts = preferences[SEARCH_HISTORY_PROMPTS] ?: return@edit
                 preferences[SEARCH_HISTORY_PROMPTS] = currentPrompts.minus(prompt)
             }
         }
@@ -53,7 +53,7 @@ class SearchHistoryRepositoryImpl(
 
     override fun getPrompts(): Flow<List<String>> = dataStore.data
         .map { preferences ->
-            (preferences[SEARCH_HISTORY_PROMPTS] ?: emptySet()).toList()
+            preferences[SEARCH_HISTORY_PROMPTS]?.toList() ?: emptyList()
         }
 
 }
