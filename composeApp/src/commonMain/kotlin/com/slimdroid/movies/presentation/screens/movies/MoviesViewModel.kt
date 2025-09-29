@@ -35,7 +35,7 @@ class MoviesViewModel(
         }
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Companion.WhileSubscribed(5000, 1),
+            started = SharingStarted.WhileSubscribed(5000, 1),
             initialValue = MoviesUiState.Loading
         )
 

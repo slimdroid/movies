@@ -25,7 +25,7 @@ class FavoritesViewModel(
         }
         .stateIn(
             viewModelScope,
-            started = SharingStarted.Companion.WhileSubscribed(5_000),
+            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = FavoriteUiState.Loading
         )
 
