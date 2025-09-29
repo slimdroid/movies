@@ -14,8 +14,10 @@ import com.slimdroid.movies.data.repository.FavoriteMoviesRepository
 import com.slimdroid.movies.data.repository.MovieDetailsRepository
 import com.slimdroid.movies.dependency.Dependencies
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -26,6 +28,9 @@ class MovieDetailsViewModel(
     private val movieId: Int,
     private val externalScope: CoroutineScope
 ) : ViewModel() {
+
+    private val _trailerErrorMessageState = MutableStateFlow(false)
+    val messageState: StateFlow<Boolean> = _trailerErrorMessageState.asStateFlow()
 
     val uiState: StateFlow<MovieDetailsUiState> = movieDetailsRepository.getMovieDetails(movieId)
         .asResult()
@@ -58,9 +63,14 @@ class MovieDetailsViewModel(
                 .onSuccess {
                     openMovieTrailer(it)
                 }.onFailure {
-                    // TODO show snackbar about it
-                    Logger.i { "Can not open YouTube" }
+                    _trailerErrorMessageState.emit(true)
                 }
+        }
+    }
+
+    fun resetMessageState() {
+        viewModelScope.launch {
+            _trailerErrorMessageState.emit(false)
         }
     }
 

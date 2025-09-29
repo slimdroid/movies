@@ -10,7 +10,10 @@ sealed interface MovieDetailsUiState {
     data object Loading : MovieDetailsUiState
 
     @Immutable
-    data class Success(val movie: Movie) : MovieDetailsUiState
+    data class Success(
+        val movie: Movie,
+        val showFailureMessage: Boolean = false
+    ) : MovieDetailsUiState
 
     @Immutable
     data object Failure : MovieDetailsUiState

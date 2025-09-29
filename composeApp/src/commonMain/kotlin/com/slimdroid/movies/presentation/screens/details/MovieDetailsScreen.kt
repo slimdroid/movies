@@ -34,12 +34,18 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,6 +63,7 @@ import com.slimdroid.movies.presentation.composables.CustomErrorScreenSomethingH
 import com.slimdroid.movies.presentation.composables.LoadingScreen
 import com.slimdroid.movies.theme.AppTheme
 import com.slimdroid.movies.theme.ScrimDark
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
 
@@ -72,6 +79,21 @@ fun MovieDetailsRoute(
     )
 ) {
     val uiState: MovieDetailsUiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val failureMessageState: Boolean by viewModel.messageState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    if (failureMessageState) {
+        LaunchedEffect(failureMessageState) {
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = "Can not open YouTube",
+                    duration = SnackbarDuration.Short
+                )
+                viewModel.resetMessageState()
+            }
+        }
+    }
 
     MovieDetailsScreen(
         onClickBack = onBackPressed,
@@ -81,7 +103,8 @@ fun MovieDetailsRoute(
         onTrailerClick = {
             viewModel.openMovieVideoUrl()
         },
-        uiState = uiState
+        uiState = uiState,
+        snackbarHostState = snackbarHostState
     )
 }
 
@@ -90,7 +113,8 @@ fun MovieDetailsScreen(
     onClickBack: () -> Unit,
     onClickFavorite: (Boolean) -> Unit,
     onTrailerClick: () -> Unit,
-    uiState: MovieDetailsUiState
+    uiState: MovieDetailsUiState,
+    snackbarHostState: SnackbarHostState
 ) {
     when (uiState) {
         is MovieDetailsUiState.Loading -> LoadingScreen()
@@ -100,7 +124,8 @@ fun MovieDetailsScreen(
                 onClickBack = onClickBack,
                 onClickFavorite = onClickFavorite,
                 onTrailerClick = onTrailerClick,
-                movie = uiState.movie
+                movie = uiState.movie,
+                snackbarHostState = snackbarHostState
             )
         }
 
@@ -116,7 +141,8 @@ fun MovieDetailsContent(
     onClickBack: () -> Unit,
     onClickFavorite: (Boolean) -> Unit,
     onTrailerClick: () -> Unit,
-    movie: Movie
+    movie: Movie,
+    snackbarHostState: SnackbarHostState
 ) {
     Scaffold(
         topBar = {
@@ -143,6 +169,9 @@ fun MovieDetailsContent(
                     }
                 }
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         }
     ) { paddingValues ->
         Column(
@@ -383,7 +412,8 @@ fun DetailsMovieContentPreview(
                 onClickBack = {},
                 onClickFavorite = {},
                 onTrailerClick = {},
-                uiState = mockedUiState
+                uiState = mockedUiState,
+                snackbarHostState = remember { SnackbarHostState() }
             )
         }
     }

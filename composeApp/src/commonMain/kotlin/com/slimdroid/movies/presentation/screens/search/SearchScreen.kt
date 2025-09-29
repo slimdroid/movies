@@ -1,6 +1,7 @@
 package com.slimdroid.movies.presentation.screens.search
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,7 +26,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -34,11 +34,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.slimdroid.movies.data.model.Movie
-import com.slimdroid.movies.presentation.composables.CustomEmptySearchScreen
 import com.slimdroid.movies.presentation.composables.CustomErrorScreenSomethingHappens
-import movies.composeapp.generated.resources.Res
-import movies.composeapp.generated.resources.empty_screen_description_no_results
-import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -85,15 +81,12 @@ fun SearchScreen(
             .fillMaxSize()
     ) {
         val history: List<String> = searchHistory.value
-        val colors1 = SearchBarDefaults.colors()
 
         SearchBar(
             inputField = {
                 SearchBarDefaults.InputField(
                     query = uiState.query,
-                    onQueryChange = {
-                        onNewQuery(it)
-                    },
+                    onQueryChange = { onNewQuery(it) },
                     onSearch = {},
                     expanded = uiState.expanded,
                     onExpandedChange = onExpandedChange,
@@ -125,23 +118,15 @@ fun SearchScreen(
                                 )
                             }
                         }
-                    },
-                    colors = colors1.inputFieldColors,
+                    }
                 )
-                //text showed on SearchBar
-                //update the value of searchText
-                //the callback to be invoked when the input service triggers the ImeAction.Search action
             },
             expanded = uiState.expanded,
             onExpandedChange = { onExpandedChange(it) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.align(Alignment.CenterHorizontally),
             shape = SearchBarDefaults.inputFieldShape,
-            colors = colors1,
             tonalElevation = SearchBarDefaults.TonalElevation,
             shadowElevation = SearchBarDefaults.ShadowElevation,
-            windowInsets = SearchBarDefaults.windowInsets
         ) {
             SearchResultContent(
                 paddingValues = paddingValues,
@@ -152,7 +137,9 @@ fun SearchScreen(
         }
         if (uiState.expanded.not()) {
             LazyColumn(
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 16.dp)
             ) {
                 itemsIndexed(items = history) { index, historyItem ->
                     SearchHistoryItem(
@@ -209,17 +196,11 @@ private fun SearchResultContent(
             when {
                 loadState.refresh is LoadState.Loading -> {
                     item {
-                        Column(
-                            modifier = Modifier
-                                .fillParentMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
+                        Box(
+                            modifier = Modifier.fillParentMaxSize(),
+                            contentAlignment = Alignment.Center,
                         ) {
-                            Text(
-                                modifier = Modifier
-                                    .padding(8.dp),
-                                text = "Search movie"
-                            )
+                            CircularProgressIndicator()
                         }
                     }
                 }
@@ -234,7 +215,7 @@ private fun SearchResultContent(
                         ) {
                             Text(text = "Pagination Loading")
 
-                            CircularProgressIndicator(color = Color.Black)
+                            CircularProgressIndicator()
                         }
                     }
                 }
@@ -250,13 +231,18 @@ private fun SearchResultContent(
                 loadState.append is LoadState.NotLoading -> {
                     if (lazyPagingItems.itemCount == 0) {
                         item {
-                            CustomEmptySearchScreen(
-                                Modifier.padding(bottom = 180.dp),
-                                description = stringResource(
-                                    Res.string.empty_screen_description_no_results,
-                                    "searchQuery"
+                            Column(
+                                modifier = Modifier
+                                    .fillParentMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                            ) {
+                                Text(
+                                    modifier = Modifier
+                                        .padding(8.dp),
+                                    text = "Search movie"
                                 )
-                            )
+                            }
                         }
                     }
                 }
