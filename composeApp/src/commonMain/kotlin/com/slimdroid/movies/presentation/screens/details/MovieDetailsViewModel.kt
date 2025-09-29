@@ -58,6 +58,7 @@ class MovieDetailsViewModel(
                 .onSuccess {
                     openMovieTrailer(it)
                 }.onFailure {
+                    // TODO show snackbar about it
                     Logger.i { "Can not open YouTube" }
                 }
         }

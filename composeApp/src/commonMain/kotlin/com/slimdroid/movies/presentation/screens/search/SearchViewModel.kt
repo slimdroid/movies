@@ -1,63 +1,74 @@
 package com.slimdroid.movies.presentation.screens.search
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.slimdroid.movies.common.Result
-import com.slimdroid.movies.common.asResult
+import com.slimdroid.movies.data.model.Movie
 import com.slimdroid.movies.data.repository.SearchHistoryRepository
 import com.slimdroid.movies.data.repository.SearchMovieRepository
 import com.slimdroid.movies.dependency.Dependencies
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SearchViewModel(
     private val searchRepository: SearchMovieRepository,
-    private val searchHistoryRepository: SearchHistoryRepository
+    private val searchHistoryRepository: SearchHistoryRepository,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val queryFlow = MutableStateFlow("")
+    private val _iuState = MutableStateFlow(SearchUiState.default())
+    val iuState: StateFlow<SearchUiState> = _iuState.asStateFlow()
+
+    init {
+        savedStateHandle.get<String>(LAST_SEARCH_QUERY)?.let { query -> onQueryChanged(query) }
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val uiState: StateFlow<SearchUiState> = queryFlow.flatMapLatest { query ->
-        searchRepository.searchMovie(query)
+    val pagingDataFlow: Flow<PagingData<Movie>> = _iuState.flatMapLatest { state ->
+        searchRepository
+            .searchMovie(state.query)
             .cachedIn(viewModelScope)
-            .asResult()
-            .map {
-                when (it) {
-                    is Result.Loading -> SearchUiState.Loading
-                    is Result.Error -> SearchUiState.ErrorGeneral(
-                        it.exception.message ?: "Unknown error"
-                    )
-
-                    is Result.Success -> SearchUiState.Success(flowOf(it.data))
-                }
-            }
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.Companion.WhileSubscribed(5000, 1),
-        initialValue = SearchUiState.Loading
+        started = SharingStarted.WhileSubscribed(5000, 1),
+        initialValue = PagingData.empty()
     )
 
     val searchHistory: StateFlow<List<String>> = searchHistoryRepository.getPrompts()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Companion.WhileSubscribed(5000, 1),
+            started = SharingStarted.WhileSubscribed(5000, 1),
             initialValue = emptyList()
         )
 
     fun onQueryChanged(query: String) {
-        queryFlow.value = query
+        _iuState.update {
+            it.copy(query = query)
+        }
+    }
+
+    fun onClearChanged() {
+        onQueryChanged("")
+    }
+
+    fun onExpandedChange(expanded: Boolean) {
+        _iuState.update {
+            it.copy(expanded = expanded)
+        }
     }
 
     fun savePrompt(prompt: String) {
@@ -72,13 +83,21 @@ class SearchViewModel(
         }
     }
 
+    override fun onCleared() {
+        savedStateHandle[LAST_SEARCH_QUERY] = _iuState.value.query
+        super.onCleared()
+    }
+
     companion object {
+
+        private const val LAST_SEARCH_QUERY: String = "last_search_query"
 
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 SearchViewModel(
                     searchRepository = Dependencies.searchRepository,
-                    searchHistoryRepository = Dependencies.searchHistoryRepository
+                    searchHistoryRepository = Dependencies.searchHistoryRepository,
+                    savedStateHandle = createSavedStateHandle()
                 )
             }
         }
